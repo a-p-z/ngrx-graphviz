@@ -1,0 +1,11 @@
+:host {
+  display: flex;
+  flex-grow: 1;
+
+  #graph {
+    padding-left:10px;
+    padding-top: 10px;
+    flex-grow: 1;
+    overflow: hidden;
+  }
+}

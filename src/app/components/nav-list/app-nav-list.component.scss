@@ -1,0 +1,20 @@
+@use '@angular/material' as mat;
+
+@import 'src/theme';
+
+:host {
+  .full-width {
+    width: 100%;
+  }
+
+  mat-form-field {
+    position: sticky;
+    top: 0;
+    background: #fafafa;
+    z-index: 10;
+  }
+
+  ::ng-deep .highlight {
+    color: mat.get-color-from-palette($accent-palette, 500);
+  }
+}

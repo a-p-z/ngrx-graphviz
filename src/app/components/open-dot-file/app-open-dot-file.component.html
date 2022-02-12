@@ -1,0 +1,5 @@
+<input #input type="file" (change)="onFileSelected($event)"/>
+<button mat-raised-button color="accent" (click)="input.click()" [disabled]="isLoading$ | async" [style.visibility]="visibility$ | async">
+  <mat-icon aria-hidden="false" aria-label="Dot file" svgIcon="dot_file"></mat-icon>
+  Open DOT file
+</button>
