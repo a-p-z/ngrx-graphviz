@@ -1,0 +1,13 @@
+<mat-form-field class="full-width" appearance="fill">
+  <mat-label>Search</mat-label>
+  <input matInput type="text" [(ngModel)]="filterText">
+  <button *ngIf="!!filterText" matSuffix mat-icon-button id="clear" aria-label="Clear" (click)="filterText=''">
+    <mat-icon>close</mat-icon>
+  </button>
+</mat-form-field>
+
+<mat-nav-list *ngIf="navListItems$ | async as navListItems">
+  <mat-list-item *ngFor="let navListItem of navListItems | filter: 'label': filterText">
+    <span class="full-width" [innerHTML]="(navListItem.label) | highlight: filterText" (click)="transitionToNode(navListItem)"></span>
+  </mat-list-item>
+</mat-nav-list>

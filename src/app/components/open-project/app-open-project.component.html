@@ -1,0 +1,5 @@
+<input #input type="file" (change)="onProjectSelected($event)" webkitdirectory directory multiple/>
+<button mat-raised-button color="accent" (click)="input.click()" [disabled]="isLoading$ | async" [style.visibility]="visibility$ | async">
+  <mat-icon aria-hidden="false" aria-label="Ngrx Project" svgIcon="ngrx_project"></mat-icon>
+  Open NgRx project
+</button>

@@ -1,0 +1,41 @@
+<!-- Toolbar -->
+<mat-toolbar color="primary">
+  <img width="40"
+       alt="NgRx Graphviz"
+       src="assets/ngrx-graphviz.svg"/>
+  <span>NgRx Graphviz</span>
+</mat-toolbar>
+
+<!-- Sidenav -->
+<mat-sidenav-container autosize>
+  <mat-sidenav mode="side" [opened]="isLoaded$ | async">
+    <app-nav-list></app-nav-list>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <mat-progress-bar [style.visibility]="(isLoading$ | async) ? 'visible' : 'hidden'" mode="indeterminate"></mat-progress-bar>
+
+    <app-open-dot-file *ngIf="!(isLoaded$ | async)"></app-open-dot-file>
+
+    <app-open-project *ngIf="!(isLoaded$ | async)"></app-open-project>
+
+    <app-graphviz></app-graphviz>
+
+    <app-save-dot-file *ngIf="(isLoaded$ | async) && (modeProject$ | async)"></app-save-dot-file>
+  </mat-sidenav-content>
+</mat-sidenav-container>
+
+<!-- Footer -->
+<footer>
+  <div class="github">
+    Love NgRx Graphviz?&nbsp;
+    <a href="https://github.com/a-p-z/ngrx-graphviz" target="_blank" rel="noopener">
+      Give my repo a
+      <div class="github-star-badge">
+        <svg class="material-icons" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+          <path d="M0 0h24v24H0z" fill="none"/>
+          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+        </svg>
+      </div>
+    </a>
+  </div>
+</footer>
