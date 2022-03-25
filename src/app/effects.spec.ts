@@ -9,18 +9,21 @@ import {ProjectParser} from "./core/project-parser";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {TextFileReader} from "./core/text-file-reader";
 import {
-  createDotSrc,
-  createDotSrcSucceeded,
+  changeNavListItemsFromOpenDotFile,
+  changeNavListItemsFromParseProject,
+  changeSrcDotFromCreateDotSrc,
+  changeSrcDotFromReadDotSrc,
+  createDotSrcFromParseProject,
   openSnackBar,
   openSnackBarFromGraphvizComponent,
   openSnackBarFromOpenFileComponent,
   openSnackBarFromOpenProjectComponent,
+  parseProjectFromReadProject,
   readDotFileFromOpenDotFileComponent,
-  readDotFileSucceeded,
   readProjectFromOpenProjectComponent,
-  readProjectSucceeded,
   resetStatus,
-  resolveNavListItemsSucceeded,
+  resolveNavListItemsFromOpenDotFile,
+  resolveNavListItemsFromParseProject,
   saveDotFileFromSaveDotFileComponent
 } from "./actions";
 import {TestScheduler} from "rxjs/testing";
@@ -29,6 +32,7 @@ import SpyObj = jasmine.SpyObj;
 
 describe("Effects", () => {
   const initialState = {};
+  const r = resetStatus();
 
   let actions$: Observable<TypedAction<string>>;
   let effects: GraphvizEffects;
@@ -65,16 +69,20 @@ describe("Effects", () => {
     testScheduler = new TestScheduler((actual, expected) => expect(actual).toEqual(expected));
   });
 
-  describe(`when '${createDotSrc.type}' is dispatched`, () => {
+  describe(`when '${createDotSrcFromParseProject.type}' is dispatched`, () => {
+    const a = createDotSrcFromParseProject({actions: [], effects$: [], reducers: []});
+    const b = changeSrcDotFromCreateDotSrc({dotSrc: "digraph { A->B }"});
+    const o = openSnackBar({message: "Error creating dot src", error: new Error("simulated error")});
+
     describe("and dotFileParser.createDotSrc succeeds", () => {
       beforeEach(() => {
         dotFileParser.createDotSrc.and.returnValue("digraph { A->B }");
       });
 
-      it(`createDotSrc$ should return '${createDotSrcSucceeded.type}'`, () => {
+      it(`createDotSrc$ should return '${b.type}'`, () => {
         testScheduler.run(({hot, expectObservable}) => {
-          actions$ = hot("a|", {a: createDotSrc({actions: [], effects$: [], reducers: []})});
-          expectObservable(effects.createDotSrc$).toBe("b|", {b: createDotSrcSucceeded({dotSrc: "digraph { A->B }"})});
+          actions$ = hot("a|", {a});
+          expectObservable(effects.createDotSrc$).toBe("b|", {b});
         });
       });
     });
@@ -84,13 +92,10 @@ describe("Effects", () => {
         dotFileParser.createDotSrc.and.throwError("simulated error");
       });
 
-      it(`createDotSrc$ should return '${openSnackBar.type}' and '${resetStatus.type}'`, () => {
+      it(`createDotSrc$ should return '${o.type}' and '${r.type}'`, () => {
         testScheduler.run(({hot, expectObservable}) => {
-          actions$ = hot("a|", {a: createDotSrc({actions: [], effects$: [], reducers: []})});
-          expectObservable(effects.createDotSrc$).toBe("(or|)", {
-            o: openSnackBar({message: "Error creating dot src", error: new Error("simulated error")}),
-            r: resetStatus()
-          });
+          actions$ = hot("a|", {a});
+          expectObservable(effects.createDotSrc$).toBe("(or|)", {o, r});
         });
       });
     });
@@ -115,39 +120,80 @@ describe("Effects", () => {
     });
   });
 
+  describe(`when '${parseProjectFromReadProject.type}' is dispatched`, () => {
+    const tsconfig = {path: "tsconfig.json", text: ''};
+    const a = parseProjectFromReadProject({sourceFiles: [tsconfig]});
+    const b = createDotSrcFromParseProject({actions: [], effects$: [], reducers: []});
+    const c = resolveNavListItemsFromParseProject({actions: []});
+    const o = openSnackBar({message: 'Error analyzing project', error: new Error('simulated error')});
+
+    describe('and projectParser.parse succeeds', () => {
+      beforeEach(() => {
+        projectParser.parse.and.returnValue({actions: [], effects$: [], reducers: []});
+      });
+
+      it(`parseProject$ should return '${b.type}' and '${c.type}'`, () => {
+        testScheduler.run(({hot, expectObservable}) => {
+          actions$ = hot('a---|', {a});
+          expectObservable(effects.parseProject$).toBe('(bc)|', {b, c});
+        });
+      });
+    });
+
+    describe('and projectReader.parse fails', () => {
+      beforeEach(() => {
+        projectParser.parse.and.throwError('simulated error');
+      });
+
+      it(`parseProject$ should return '${o.type}' and '${r.type}'`, () => {
+        testScheduler.run(({hot, expectObservable}) => {
+          actions$ = hot('a|', {a});
+          expectObservable(effects.parseProject$).toBe('(or|)', {o, r});
+        });
+      });
+    });
+  });
+
   describe(`when '${readDotFileFromOpenDotFileComponent.type}' is dispatched`, () => {
     const file = new File([], 'test');
+    const dotSrc = 'digraph { A->B }';
+    const error = new Error('simulated error');
+    const a = readDotFileFromOpenDotFileComponent({file});
+    const b = changeSrcDotFromReadDotSrc({dotSrc});
+    const c = resolveNavListItemsFromOpenDotFile({dotSrc});
+    const o = openSnackBar({message: 'Error reading dot file', error});
 
     describe('and textFileReader.read succeeds', () => {
-      it(`readDotFile$ should return '${readDotFileSucceeded.type}'`, () => {
+      it(`readDotFile$ should return '${b.type}' and '${c.type}'`, () => {
         testScheduler.run(({cold, hot, expectObservable}) => {
-          actions$ = hot('a|', {a: readDotFileFromOpenDotFileComponent({file})});
-          textFileReader.read.and.returnValue(cold('b|', {b: 'digraph { A->B }'}));
-          expectObservable(effects.readDotFile$).toBe('c|', {c: readDotFileSucceeded({dotSrc: 'digraph { A->B }'})});
+          actions$ = hot('a|', {a});
+          textFileReader.read.and.returnValue(cold('a---|', {a: dotSrc}));
+          expectObservable(effects.readDotFile$).toBe('(bc)|', {b, c});
         });
       });
     });
 
     describe('and textFileReader.read fails', () => {
-      const error = new Error('simulated error');
-
-      it(`readDotFile$ should return '${openSnackBar.type}' and '${resetStatus.type}'`, () => {
+      it(`readDotFile$ should return '${o.type}' and '${r.type}'`, () => {
         testScheduler.run(({cold, hot, expectObservable}) => {
           actions$ = hot('a|', {a: readDotFileFromOpenDotFileComponent({file})});
           textFileReader.read.and.returnValue(cold('#|', {}, error));
-          expectObservable(effects.readDotFile$).toBe('(or|)', {
-            o: openSnackBar({message: 'Error reading dot file', error}),
-            r: resetStatus()
-          });
+          expectObservable(effects.readDotFile$).toBe('(or|)', {o, r});
         });
       });
     });
   });
 
   describe(`when '${readProjectFromOpenProjectComponent.type}' is dispatched`, () => {
-    describe('and textFileReader.read succeeds', () => {
-      const files = [{webkitRelativePath: 'test/file1'}, {webkitRelativePath: 'test/file2'}] as File[];
+    const files = [{webkitRelativePath: 'test/file1'}, {webkitRelativePath: 'test/file2'}] as File[];
+    const sourceFile1 = {path: 'test/file1', text: 'file 1 content'};
+    const sourceFile2 = {path: 'test/file2', text: 'file 2 content'};
+    const error = new Error('simulated error');
+    const a = readProjectFromOpenProjectComponent({projectName: 'ngrx-graphviz', files});
+    const b = parseProjectFromReadProject({sourceFiles: [sourceFile1, sourceFile2]});
+    const o = openSnackBar({message: 'Error reading project', error});
 
+    describe('and textFileReader.read succeeds', () => {
       describe('and projectParser.createSourceFile succeeds', () => {
         beforeEach(() => {
           projectParser.createSourceFile.and.callFake((path, text) => {
@@ -155,17 +201,11 @@ describe("Effects", () => {
           });
         });
 
-        it(`readProject$ should return '${readProjectSucceeded.type}'`, () => {
+        it(`readProject$ should return '${b.type}'`, () => {
           testScheduler.run(({cold, hot, expectObservable}) => {
-            actions$ = hot('a|', {a: readProjectFromOpenProjectComponent({projectName: 'ngrx-graphviz', files})});
-            textFileReader.read.and.returnValues(cold('b|', {b: 'file 1 content'}), cold('c|', {c: 'file 2 content'}));
-            expectObservable(effects.readProject$).toBe('((d|))', {
-              d: readProjectSucceeded({
-                sourceFiles: [
-                  {path: 'test/file1', text: 'file 1 content'},
-                  {path: 'test/file2', text: 'file 2 content'}]
-              })
-            });
+            actions$ = hot('a|', {a});
+            textFileReader.read.and.returnValues(cold('a|', {a: 'file 1 content'}), cold('a|', {a: 'file 2 content'}));
+            expectObservable(effects.readProject$).toBe('((b|))', {b});
           });
         });
       });
@@ -179,116 +219,40 @@ describe("Effects", () => {
             .withArgs('test/file2', 'file 2 content').and.throwError('simulated error')
         });
 
-        it(`readProject$ should return '${readProjectSucceeded.type}'`, () => {
+        it(`readProject$ should return '${o.type}' and '${r.type}'`, () => {
           testScheduler.run(({cold, hot, expectObservable}) => {
-            actions$ = hot('a|', {a: readProjectFromOpenProjectComponent({projectName: 'ngrx-graphviz', files})});
-            textFileReader.read.and.returnValues(cold('b|', {b: 'file 1 content'}), cold('c|', {c: 'file 2 content'}));
-            expectObservable(effects.readProject$).toBe('(or|)', {
-              o: openSnackBar({message: 'Error reading project', error: new Error('simulated error')}),
-              r: resetStatus()
-            });
+            actions$ = hot('a|', {a});
+            textFileReader.read.and.returnValues(cold('a|', {a: 'file 1 content'}), cold('a|', {a: 'file 2 content'}));
+            expectObservable(effects.readProject$).toBe('(or|)', {o, r});
           });
         });
       });
     });
 
     describe('and textFileReader.read fails', () => {
-      const error = new Error('simulated error');
-
-      it(`readProject$ should return '${openSnackBar.type}' and '${resetStatus.type}'`, () => {
+      it(`readProject$ should return '${o.type}' and '${r.type}'`, () => {
         testScheduler.run(({hot, expectObservable}) => {
           actions$ = hot('#|', {}, error);
-          expectObservable(effects.readProject$).toBe('(or|)', {
-            o: openSnackBar({message: 'Error reading project', error}),
-            r: resetStatus()
-          });
+          expectObservable(effects.readProject$).toBe('(or|)', {o, r});
         });
       });
     });
   });
 
-  describe(`when '${readProjectSucceeded.type}' is dispatched`, () => {
-    const tsconfig = {path: "tsconfig.json", text: ''};
+  describe(`when '${resolveNavListItemsFromOpenDotFile.type}' is dispatched`, () => {
+    const a = resolveNavListItemsFromOpenDotFile({dotSrc: 'digraph { A->B }'});
+    const b = changeNavListItemsFromOpenDotFile({navListItems: [{id: 'A', label: 'A'}, {id: 'B', label: 'B'}]});
+    const o = openSnackBar({message: 'Error extracting actions from dot file', error: new Error('simulated error')});
 
-    describe('and projectParser.parse succeeds', () => {
-      beforeEach(() => {
-        projectParser.parse.and.returnValue({actions: [], effects$: [], reducers: []});
-      });
-
-      it(`readProjectSucceeded$ should return '${createDotSrc.type}'`, () => {
-        testScheduler.run(({hot, expectObservable}) => {
-          actions$ = hot('a|', {a: readProjectSucceeded({sourceFiles: [tsconfig]})});
-          expectObservable(effects.readProjectSucceeded$).toBe('b|', {
-            b: createDotSrc({actions: [], effects$: [], reducers: []})
-          });
-        });
-      });
-    });
-
-    describe('and projectReader.parse fails', () => {
-      beforeEach(() => {
-        projectParser.parse.and.throwError('simulated error');
-      });
-
-      it(`readProjectSucceeded$ should return '${openSnackBar.type}' and '${resetStatus.type}'`, () => {
-        testScheduler.run(({hot, expectObservable}) => {
-          actions$ = hot('a|', {a: readProjectSucceeded({sourceFiles: [tsconfig]})});
-          expectObservable(effects.readProjectSucceeded$).toBe('(or|)', {
-            o: openSnackBar({message: 'Error analyzing project', error: new Error('simulated error')}),
-            r: resetStatus()
-          });
-        });
-      });
-    });
-  });
-
-  describe(`when '${createDotSrc.type}' is dispatched`, () => {
-    describe('and dotFileParser.getNavListItemsFromActions succeeds', () => {
-      beforeEach(() => {
-        dotFileParser.getNavListItemsFromActions.and.returnValue([]);
-      });
-
-      it(`resolveNavListItemsFromActions$ should return '${resolveNavListItemsSucceeded.type}'`, () => {
-        testScheduler.run(({hot, expectObservable}) => {
-          actions$ = hot('a|', {a: createDotSrc({actions: [], effects$: [], reducers: []})});
-          expectObservable(effects.resolveNavListItemsFromActions$).toBe('b|', {b: resolveNavListItemsSucceeded({navListItems: []})});
-        });
-      });
-    });
-
-    describe('and dotFileParser.getNavListItemsFromActions fails', () => {
-      beforeEach(() => {
-        dotFileParser.getNavListItemsFromActions.and.throwError('simulated error');
-      });
-
-      it(`resolveNavListItemsFromActions$ should return '${openSnackBar.type}' and '${resetStatus.type}'`, () => {
-        testScheduler.run(({hot, expectObservable}) => {
-          actions$ = hot('a|', {a: createDotSrc({actions: [], effects$: [], reducers: []})});
-          expectObservable(effects.resolveNavListItemsFromActions$).toBe('(or|)', {
-            o: openSnackBar({message: 'Error creating nav list items', error: new Error('simulated error')}),
-            r: resetStatus()
-          });
-        });
-      });
-    });
-  });
-
-  describe(`when '${readDotFileSucceeded.type}' is dispatched`, () => {
     describe('and dotFileParser.getNavListItemsFromDotSrc succeeds', () => {
       beforeEach(() => {
         dotFileParser.getNavListItemsFromDotSrc.and.returnValue([{id: 'A', label: 'A'}, {id: 'B', label: 'B'}]);
       });
 
-      it(`resolveNavListItemsFromDotSrc$ should return '${resolveNavListItemsSucceeded.type}'`, () => {
+      it(`resolveNavListItemsFromOpenDotFile$ should return '${b.type}'`, () => {
         testScheduler.run(({hot, expectObservable}) => {
-          actions$ = hot('a|', {a: readDotFileSucceeded({dotSrc: 'digraph { A->B }'})});
-          expectObservable(effects.resolveNavListItemsFromDotSrc$).toBe('b|', {
-            b: resolveNavListItemsSucceeded({
-              navListItems: [
-                {id: 'A', label: 'A'},
-                {id: 'B', label: 'B'}]
-            })
-          });
+          actions$ = hot('a|', {a});
+          expectObservable(effects.resolveNavListItemsFromOpenDotFile$).toBe('b|', {b});
         });
       });
     });
@@ -298,13 +262,42 @@ describe("Effects", () => {
         dotFileParser.getNavListItemsFromDotSrc.and.throwError('simulated error');
       });
 
-      it(`resolveNavListItemsFromDotSrc$ should return '${openSnackBar.type}' and '${resetStatus.type}'`, () => {
+      it(`resolveNavListItemsFromOpenDotFile$ should return '${o.type}' and '${r.type}'`, () => {
         testScheduler.run(({hot, expectObservable}) => {
-          actions$ = hot('a|', {a: readDotFileSucceeded({dotSrc: 'digraph { A->B }'})});
-          expectObservable(effects.resolveNavListItemsFromDotSrc$).toBe('(or|)', {
-            o: openSnackBar({message: 'Error extracting actions from dot file', error: new Error('simulated error')}),
-            r: resetStatus()
-          });
+          actions$ = hot('a|', {a});
+          expectObservable(effects.resolveNavListItemsFromOpenDotFile$).toBe('(or|)', {o, r});
+        });
+      });
+    });
+  });
+
+  describe(`when '${resolveNavListItemsFromParseProject.type}' is dispatched`, () => {
+    const a = resolveNavListItemsFromParseProject({actions: []});
+    const b = changeNavListItemsFromParseProject({navListItems: []});
+    const o = openSnackBar({message: 'Error creating nav list items', error: new Error('simulated error')});
+
+    describe('and dotFileParser.getNavListItemsFromActions succeeds', () => {
+      beforeEach(() => {
+        dotFileParser.getNavListItemsFromActions.and.returnValue([]);
+      });
+
+      it(`resolveNavListItemsFromOpenProject$ should return '${b.type}'`, () => {
+        testScheduler.run(({hot, expectObservable}) => {
+          actions$ = hot('a|', {a});
+          expectObservable(effects.resolveNavListItemsFromOpenProject$).toBe('b|', {b});
+        });
+      });
+    });
+
+    describe('and dotFileParser.getNavListItemsFromActions fails', () => {
+      beforeEach(() => {
+        dotFileParser.getNavListItemsFromActions.and.throwError('simulated error');
+      });
+
+      it(`resolveNavListItemsFromOpenProject$ should return '${o.type}' and '${r.type}'`, () => {
+        testScheduler.run(({hot, expectObservable}) => {
+          actions$ = hot('a|', {a});
+          expectObservable(effects.resolveNavListItemsFromOpenProject$).toBe('(or|)', {o, r});
         });
       });
     });
@@ -323,7 +316,7 @@ describe("Effects", () => {
         return "blob:http://localhost:9876/9268ee69-2dc8-4711-bdc3-ff778b3b0d74";
       });
       actions$ = of(saveDotFileFromSaveDotFileComponent());
-      effects.saveDotFileFromSaveDotFileComponent$.subscribe();
+      effects.saveDotFile$.subscribe();
     });
 
     it('the anchor should be created', () => {

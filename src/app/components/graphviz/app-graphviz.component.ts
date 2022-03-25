@@ -7,8 +7,8 @@ import {filter, Subject} from 'rxjs';
 import {selectDotSrc} from 'src/app/selectors'
 import {takeUntil} from 'rxjs/operators';
 import {
+  changeStatusFromGraphvizComponent,
   openSnackBarFromGraphvizComponent,
-  renderSucceededFromGraphvizComponent,
   resetStatusFromGraphvizComponent,
   transitionToNodeFromNavListComponent,
 } from 'src/app/actions';
@@ -110,7 +110,7 @@ export class AppGraphvizComponent implements AfterViewInit, OnDestroy, OnInit {
 
   // when the graphviz renderer has finished all actions.
   private end(): void {
-    this.store.dispatch(renderSucceededFromGraphvizComponent());
+    this.store.dispatch(changeStatusFromGraphvizComponent());
     this.selectAll('.node').on('click', (event$) => this.onNodeClick(event$));
     this.selectAll('.edge').on('click', (event$) => this.onEdgeClick(event$));
   }

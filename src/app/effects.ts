@@ -1,19 +1,22 @@
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {Injectable} from '@angular/core';
 import {
-  createDotSrc,
-  createDotSrcSucceeded,
+  changeNavListItemsFromOpenDotFile,
+  changeNavListItemsFromParseProject,
+  changeSrcDotFromCreateDotSrc,
+  changeSrcDotFromReadDotSrc,
+  createDotSrcFromParseProject,
   openSnackBar,
   openSnackBarFromGraphvizComponent,
   openSnackBarFromOpenFileComponent,
   openSnackBarFromOpenProjectComponent,
+  parseProjectFromReadProject,
   readDotFileFromOpenDotFileComponent,
-  readDotFileSucceeded,
   readProjectFromOpenProjectComponent,
-  readProjectSucceeded,
   resetStatus,
-  resolveNavListItemsSucceeded,
-  saveDotFileFromSaveDotFileComponent
+  resolveNavListItemsFromOpenDotFile,
+  resolveNavListItemsFromParseProject,
+  saveDotFileFromSaveDotFileComponent,
 } from "./actions";
 import {catchError, filter, forkJoin, map, mergeMap, switchMap, tap, withLatestFrom} from "rxjs";
 import {TextFileReader} from "./core/text-file-reader";
@@ -38,9 +41,9 @@ export class GraphvizEffects {
 
   createDotSrc$ = createEffect(() => {
     return this.actions$.pipe(
-      ofType(createDotSrc.type),
+      ofType(createDotSrcFromParseProject.type),
       map(({actions, effects$, reducers}) => this.dotFileParser.createDotSrc(actions, effects$, reducers)),
-      map((dotSrc) => createDotSrcSucceeded({dotSrc})),
+      map((dotSrc) => changeSrcDotFromCreateDotSrc({dotSrc})),
       catchError((error) => [
         openSnackBar({message: 'Error creating dot src', error}),
         resetStatus()]));
@@ -59,11 +62,26 @@ export class GraphvizEffects {
     },
     {dispatch: false});
 
+  parseProject$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(parseProjectFromReadProject.type),
+      map(({sourceFiles}: { sourceFiles: ISourceFile[] }) => sourceFiles.filter(({path}) => path.endsWith("tsconfig.json"))[0]),
+      map(({path}) => this.projectParser.parse(path)),
+      switchMap((props) => [
+        createDotSrcFromParseProject(props),
+        resolveNavListItemsFromParseProject({actions: props.actions})]),
+      catchError((error) => [
+        openSnackBar({message: 'Error analyzing project', error}),
+        resetStatus()]));
+  });
+
   readDotFile$ = createEffect(() => {
     return this.actions$.pipe(
       ofType(readDotFileFromOpenDotFileComponent.type),
       mergeMap(({file}) => this.textFileReader.read(file)),
-      map((dotSrc) => readDotFileSucceeded({dotSrc})),
+      switchMap((dotSrc) => [
+        changeSrcDotFromReadDotSrc({dotSrc}),
+        resolveNavListItemsFromOpenDotFile({dotSrc})]),
       catchError((error) => [
         openSnackBar({message: 'Error reading dot file', error}),
         resetStatus()]));
@@ -75,44 +93,33 @@ export class GraphvizEffects {
       switchMap(({files}: { files: File[] }) => forkJoin(files
         .map((file: File) => this.textFileReader.read(file).pipe(
           map((text) => this.projectParser.createSourceFile(file.webkitRelativePath, text)))))),
-      map((sourceFiles) => readProjectSucceeded({sourceFiles})),
+      map((sourceFiles) => parseProjectFromReadProject({sourceFiles})),
       catchError((error) => [
         openSnackBar({message: 'Error reading project', error}),
         resetStatus()]));
   });
 
-  readProjectSucceeded$ = createEffect(() => {
+  resolveNavListItemsFromOpenDotFile$ = createEffect(() => {
     return this.actions$.pipe(
-      ofType(readProjectSucceeded.type),
-      map(({sourceFiles}: { sourceFiles: ISourceFile[] }) => sourceFiles.filter(({path}) => path.endsWith("tsconfig.json"))[0]),
-      map(({path}) => this.projectParser.parse(path)),
-      map((props) => createDotSrc(props)),
-      catchError((error) => [
-        openSnackBar({message: 'Error analyzing project', error}),
-        resetStatus()]));
-  });
-
-  resolveNavListItemsFromActions$ = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(createDotSrc.type),
-      map(({actions}) => this.dotFileParser.getNavListItemsFromActions(actions)),
-      map((navListItems) => resolveNavListItemsSucceeded({navListItems})),
-      catchError((error) => [
-        openSnackBar({message: 'Error creating nav list items', error}),
-        resetStatus()]));
-  });
-
-  resolveNavListItemsFromDotSrc$ = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(readDotFileSucceeded.type),
+      ofType(resolveNavListItemsFromOpenDotFile.type),
       map(({dotSrc}) => this.dotFileParser.getNavListItemsFromDotSrc(dotSrc)),
-      map((navListItems) => resolveNavListItemsSucceeded({navListItems})),
+      map((navListItems) => changeNavListItemsFromOpenDotFile({navListItems})),
       catchError((error) => [
         openSnackBar({message: 'Error extracting actions from dot file', error}),
         resetStatus()]));
   });
 
-  saveDotFileFromSaveDotFileComponent$ = createEffect(() => {
+  resolveNavListItemsFromOpenProject$ = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(resolveNavListItemsFromParseProject.type),
+      map(({actions}) => this.dotFileParser.getNavListItemsFromActions(actions)),
+      map((navListItems) => changeNavListItemsFromParseProject({navListItems})),
+      catchError((error) => [
+        openSnackBar({message: 'Error creating nav list items', error}),
+        resetStatus()]));
+  });
+
+  saveDotFile$ = createEffect(() => {
       return this.actions$.pipe(
         ofType(saveDotFileFromSaveDotFileComponent.type),
         withLatestFrom(this.store.select(selectProjectName), this.store.select(selectDotSrc)),

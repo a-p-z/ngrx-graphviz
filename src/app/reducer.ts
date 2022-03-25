@@ -1,15 +1,16 @@
 import {createReducer, on} from '@ngrx/store';
 import {
-  createDotSrcSucceeded,
-  readDotFileFromOpenDotFileComponent,
-  readDotFileSucceeded,
-  readProjectFromOpenProjectComponent,
-  renderSucceededFromGraphvizComponent,
+  changeNavListItemsFromOpenDotFile,
+  changeNavListItemsFromParseProject,
+  changeSrcDotFromCreateDotSrc,
+  changeSrcDotFromReadDotSrc,
+  changeStatusFromGraphvizComponent,
+  changeStatusFromOpenDotFileComponent,
+  changeStatusFromOpenProjectComponent,
   resetStatus,
   resetStatusFromGraphvizComponent,
   resetStatusFromOpenDotFileComponent,
   resetStatusFromOpenProjectComponent,
-  resolveNavListItemsSucceeded,
 } from 'src/app/actions';
 import {INavListItem} from "./models";
 
@@ -29,28 +30,27 @@ const initialState: GraphvizState = {
 
 const _graphvizReducer = createReducer(
   initialState,
-  on(createDotSrcSucceeded,
-    readDotFileSucceeded, (state, {dotSrc}) => {
-      return {...state, dotSrc};
-    }),
-  on(readDotFileFromOpenDotFileComponent, (state) => {
-    return {...state, status: 'loading'};
+  on(changeNavListItemsFromOpenDotFile, changeNavListItemsFromParseProject, (state, {navListItems}) => {
+    return {...state, navListItems};
   }),
-  on(readProjectFromOpenProjectComponent, (state, {projectName}) => {
-    return {...state, status: 'loading', projectName};
+  on(changeSrcDotFromCreateDotSrc, changeSrcDotFromReadDotSrc, (state, {dotSrc}) => {
+    return {...state, dotSrc};
   }),
-  on(renderSucceededFromGraphvizComponent, (state) => {
+  on(changeStatusFromGraphvizComponent, (state) => {
     return {...state, status: 'loaded'};
   }),
-  on(resolveNavListItemsSucceeded, (state, {navListItems}) => {
-    return {...state, navListItems};
+  on(changeStatusFromOpenDotFileComponent, (state) => {
+    return {...state, status: 'loading'};
+  }),
+  on(changeStatusFromOpenProjectComponent, (state, {projectName}) => {
+    return {...state, status: 'loading', projectName};
   }),
   on(resetStatus,
     resetStatusFromGraphvizComponent,
     resetStatusFromOpenDotFileComponent,
     resetStatusFromOpenProjectComponent, (state) => {
       return {...state, dotSrc: undefined, projectName: undefined, status: undefined};
-    })
+    }),
 );
 
 export function reducer(state: any, action: any) {

@@ -7,7 +7,7 @@ import {Observable, of} from "rxjs";
 import {TypedAction} from "@ngrx/store/src/models";
 import {
   openSnackBarFromGraphvizComponent,
-  renderSucceededFromGraphvizComponent,
+  changeStatusFromGraphvizComponent,
   resetStatusFromGraphvizComponent,
   transitionToNodeFromNavListComponent
 } from "../../actions";
@@ -251,8 +251,8 @@ describe("AppGraphvizComponent", () => {
       store.setState({graphviz: {dotSrc: 'diagram {A;B;A->B;}'}});
     });
 
-    it(`'${renderSucceededFromGraphvizComponent.type}' should be dispatched`, () => {
-      expect(store.dispatch).toHaveBeenCalledWith(renderSucceededFromGraphvizComponent())
+    it(`'${changeStatusFromGraphvizComponent.type}' should be dispatched`, () => {
+      expect(store.dispatch).toHaveBeenCalledWith(changeStatusFromGraphvizComponent())
     });
 
     it('a listener should should be added on .node selection for click event', () => {
