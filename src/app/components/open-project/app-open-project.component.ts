@@ -1,5 +1,6 @@
 import {Component, ElementRef, ViewChild} from "@angular/core";
 import {
+  changeStatusFromOpenProjectComponent,
   openSnackBarFromOpenProjectComponent,
   readProjectFromOpenProjectComponent,
   resetStatusFromOpenProjectComponent,
@@ -55,6 +56,7 @@ export class AppOpenProjectComponent {
     }
 
     this.store.dispatch(readProjectFromOpenProjectComponent({projectName, files}));
+    this.store.dispatch(changeStatusFromOpenProjectComponent({projectName}));
   }
 
   private endsWith(name: string, ...extensions: string[]): boolean {

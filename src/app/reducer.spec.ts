@@ -1,44 +1,46 @@
 import {
-  createDotSrcSucceeded,
-  readDotFileFromOpenDotFileComponent,
-  readDotFileSucceeded,
-  readProjectFromOpenProjectComponent,
-  renderSucceededFromGraphvizComponent,
+  changeNavListItemsFromOpenDotFile,
+  changeNavListItemsFromParseProject,
+  changeSrcDotFromCreateDotSrc,
+  changeSrcDotFromReadDotSrc,
+  changeStatusFromGraphvizComponent,
+  changeStatusFromOpenDotFileComponent,
+  changeStatusFromOpenProjectComponent,
   resetStatus,
   resetStatusFromGraphvizComponent,
   resetStatusFromOpenDotFileComponent,
   resetStatusFromOpenProjectComponent,
-  resolveNavListItemsSucceeded
 } from "./actions";
 import {GraphvizState, reducer} from "./reducer";
 
 describe('Reducer', () => {
-
-  [createDotSrcSucceeded, readDotFileSucceeded].forEach((action) => {
+  [changeSrcDotFromCreateDotSrc, changeSrcDotFromReadDotSrc].forEach((action) => {
     it(`on '${action.type}' dotSrc should be 'digraph { A-> B}'`, () => {
       expect(reducer({}, action({dotSrc: 'digraph { A-> B}'})))
         .toEqual({dotSrc: 'digraph { A-> B}'} as GraphvizState);
     });
   });
 
-  it(`on '${readDotFileFromOpenDotFileComponent.type}' status should be 'loading'`, () => {
-    expect(reducer({}, readDotFileFromOpenDotFileComponent({file: new File([], 'test')})))
+  it(`on '${changeStatusFromOpenDotFileComponent.type}' status should be 'loading'`, () => {
+    expect(reducer({}, changeStatusFromOpenDotFileComponent()))
       .toEqual({status: 'loading'} as GraphvizState);
   });
 
-  it(`on '${readProjectFromOpenProjectComponent.type}' status should be 'loading' and projectName should be 'ngrx-graphviz'`, () => {
-    expect(reducer({}, readProjectFromOpenProjectComponent({projectName: 'ngrx-graphviz', files: []})))
+  it(`on '${changeStatusFromOpenProjectComponent.type}' status should be 'loading' and projectName should be 'ngrx-graphviz'`, () => {
+    expect(reducer({}, changeStatusFromOpenProjectComponent({projectName: 'ngrx-graphviz'})))
       .toEqual({status: 'loading', projectName: 'ngrx-graphviz'} as GraphvizState);
   });
 
-  it(`on '${renderSucceededFromGraphvizComponent.type}' status should be 'loaded'`, () => {
-    expect(reducer({}, renderSucceededFromGraphvizComponent()))
+  it(`on '${changeStatusFromGraphvizComponent.type}' status should be 'loaded'`, () => {
+    expect(reducer({}, changeStatusFromGraphvizComponent()))
       .toEqual({status: 'loaded'} as GraphvizState);
   });
 
-  it(`on '${resolveNavListItemsSucceeded.type}' navListItems should be updated`, () => {
-    expect(reducer({}, resolveNavListItemsSucceeded({navListItems: [{id: 'A', label: 'A'}, {id: 'B', label: 'B'}]})))
-      .toEqual({navListItems: [{id: 'A', label: 'A'}, {id: 'B', label: 'B'}]} as GraphvizState);
+  [changeNavListItemsFromOpenDotFile, changeNavListItemsFromParseProject].forEach((action) => {
+    it(`on '${action.type}' navListItems should be updated`, () => {
+      expect(reducer({}, action({navListItems: [{id: 'A', label: 'A'}, {id: 'B', label: 'B'}]})))
+        .toEqual({navListItems: [{id: 'A', label: 'A'}, {id: 'B', label: 'B'}]} as GraphvizState);
+    });
   });
 
   [resetStatus,

@@ -1,5 +1,6 @@
 import {Component} from '@angular/core';
 import {
+  changeStatusFromOpenDotFileComponent,
   openSnackBarFromOpenFileComponent,
   readDotFileFromOpenDotFileComponent,
   resetStatusFromOpenDotFileComponent
@@ -37,5 +38,6 @@ export class AppOpenDotFileComponent {
 
     const file = target.files[0];
     this.store.dispatch(readDotFileFromOpenDotFileComponent({file}));
+    this.store.dispatch(changeStatusFromOpenDotFileComponent());
   }
 }
