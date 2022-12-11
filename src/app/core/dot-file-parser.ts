@@ -46,7 +46,7 @@ export class DotFileParser {
 
       '\n\n    comment="reducers"\n    ' +
       reducers.map(({reducer, action}) =>
-        `"${reducer}-${action}" [image="assets/store.svg" label="" style="" tooltip="store"]\n    ` +
+        `"${reducer}-${action}" [label="store" style="" tooltip="store"]\n    ` + // `"${reducer}-${action}" [image="assets/store.svg" label="" style="" tooltip="store"]\n    ` +
         `"${action}" -> "${reducer}-${action}" [tooltip="${reducer}"]`)
         .join("\n    ") +
       "\n";
