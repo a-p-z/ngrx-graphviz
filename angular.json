@@ -116,5 +116,8 @@
       }
     }
   },
-  "defaultProject": "ngrx-graphviz"
+  "defaultProject": "ngrx-graphviz",
+  "cli": {
+    "analytics": false
+  }
 }

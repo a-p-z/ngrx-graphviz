@@ -7,5 +7,7 @@ addEventListener('message', ({data}) => {
     postMessage({result});
   } catch (error){
     postMessage({error});
+  } finally {
+    close();
   }
 });

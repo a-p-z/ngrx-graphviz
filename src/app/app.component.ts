@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {selectProjectName, selectStatus} from 'src/app/selectors';
 import {map, Observable} from 'rxjs';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -9,6 +10,7 @@ import {map, Observable} from 'rxjs';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
+  readonly VERSION = environment.version;
 
   isLoading$?: Observable<boolean>;
   isLoaded$?: Observable<boolean>;

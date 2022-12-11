@@ -37,7 +37,7 @@ export class AppGraphvizComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   ngOnInit(): void {
-    wasmFolder('assets/@hpcc-js/wasm/dist/');
+    wasmFolder("https://cdn.jsdelivr.net/npm/@hpcc-js/wasm/dist");
 
     this.store.select(selectDotSrc).pipe(
       takeUntil(this.destroy$),
@@ -53,7 +53,7 @@ export class AppGraphvizComponent implements AfterViewInit, OnDestroy, OnInit {
   ngAfterViewInit(): void {
     this.graph = select('#graph');
     this.graphviz = graphviz('#graph', {useWorker: true})
-      .addImage('assets/store.svg', '48px', '48px')
+      // .addImage('assets/store.svg', '48px', '48px')
       .on('renderEnd', () => this.renderEnd())
       .on('end', () => this.end())
       .onerror((error) => this.onError(error));

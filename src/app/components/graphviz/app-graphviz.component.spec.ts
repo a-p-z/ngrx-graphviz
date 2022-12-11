@@ -85,7 +85,7 @@ describe("AppGraphvizComponent", () => {
       expect(d3_graphviz.graphviz).toHaveBeenCalledWith('#graph', {useWorker: true});
     });
 
-    it('assets/store.svg should be added', () => {
+    xit('assets/store.svg should be added', () => {
       expect(component.graphviz.addImage).toHaveBeenCalledWith('assets/store.svg', '48px', '48px');
     });
 
