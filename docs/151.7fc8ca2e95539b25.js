@@ -1,0 +1,1 @@
+(()=>{"use strict";addEventListener("message",({data:s})=>{try{const r=(new FileReaderSync).readAsText(s);postMessage({result:r})}catch(e){postMessage({error:e})}finally{close()}})})();
