@@ -26,3 +26,5 @@ Ngrx Graphviz is able to resolve Actions, Effect and Reducers created by
 # Related projects
 - [NgRx Vis](https://github.com/co-IT/ngrx-vis)
 - [NgRx Visualizer](https://github.com/google/ngrx-visualizer)
+
+[![pages-build-deployment](https://github.com/a-p-z/ngrx-graphviz/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/a-p-z/ngrx-graphviz/actions/workflows/pages/pages-build-deployment)
