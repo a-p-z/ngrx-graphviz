@@ -25,7 +25,7 @@
     "@ngrx/store": "^14.3.2",
     "@types/d3-graphviz": "^2.6.7",
     "angular-resize-event": "^3.2.0",
-    "d3-graphviz": "^4.5.0",
+    "d3-graphviz": "^5.0.2",
     "dotparser": "^1.1.1",
     "rxjs": "^7.5.7",
     "ts-morph": "^17.0.1",
