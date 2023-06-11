@@ -143,12 +143,8 @@ describe('DotFileParser', () => {
     });
 
     [reducer].forEach(({reducer, action}) => {
-      xit(`dotSrc should contain a store icon for ${reducer}`, () => {
-        expect(dotSrc).toContain(`"${reducer}-${action}" [image="assets/store.svg" label="" style="" tooltip="store"]`);
-      });
-
       it(`dotSrc should contain a store icon for ${reducer}`, () => {
-        expect(dotSrc).toContain(`"${reducer}-${action}" [label="store" style="" tooltip="store"]`);
+        expect(dotSrc).toContain(`"${reducer}-${action}" [image="assets/store.svg" label="" style="" tooltip="store"]`);
       });
     });
 

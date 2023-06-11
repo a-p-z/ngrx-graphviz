@@ -6,8 +6,8 @@ import {provideMockActions} from "@ngrx/effects/testing";
 import {Observable, of} from "rxjs";
 import {TypedAction} from "@ngrx/store/src/models";
 import {
-  openSnackBarFromGraphvizComponent,
   changeStatusFromGraphvizComponent,
+  openSnackBarFromGraphvizComponent,
   resetStatusFromGraphvizComponent,
   transitionToNodeFromNavListComponent
 } from "../../actions";
@@ -35,13 +35,12 @@ describe("AppGraphvizComponent", () => {
       fixture = TestBed.createComponent(AppGraphvizComponent);
       component = fixture.componentInstance;
 
+      spyOn(component, "d3_graphviz").and.returnValue(graphviz);
       spyOn(component, "selectAll").and.callFake(selectAll);
       component.zoomIdentity = zoomIdentity;
 
       store = TestBed.inject(MockStore);
       spyOn(store, "dispatch").and.callThrough();
-
-      spyOn(d3_graphviz, "graphviz").and.returnValue(graphviz);
     });
   });
 
@@ -82,10 +81,10 @@ describe("AppGraphvizComponent", () => {
     });
 
     it('a new graphviz renderer instance should be created', () => {
-      expect(d3_graphviz.graphviz).toHaveBeenCalledWith('#graph', {useWorker: true});
+      expect(component.d3_graphviz).toHaveBeenCalledWith('#graph', {useWorker: true});
     });
 
-    xit('assets/store.svg should be added', () => {
+    it('assets/store.svg should be added', () => {
       expect(component.graphviz.addImage).toHaveBeenCalledWith('assets/store.svg', '48px', '48px');
     });
 

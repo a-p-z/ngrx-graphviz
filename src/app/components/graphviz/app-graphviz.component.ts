@@ -1,5 +1,4 @@
 import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
-import {wasmFolder} from '@hpcc-js/wasm';
 import {Graphviz, graphviz} from 'd3-graphviz';
 import {BaseType, select, selectAll, Selection} from 'd3-selection';
 import {Store} from '@ngrx/store';
@@ -24,6 +23,8 @@ import {Actions, ofType} from '@ngrx/effects';
 export class AppGraphvizComponent implements AfterViewInit, OnDestroy, OnInit {
 
   // for testing purpose
+  private readonly d3_graphviz = graphviz;
+
   private readonly selectAll = selectAll;
   private readonly zoomIdentity = zoomIdentity;
 
@@ -37,8 +38,6 @@ export class AppGraphvizComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   ngOnInit(): void {
-    wasmFolder("https://cdn.jsdelivr.net/npm/@hpcc-js/wasm/dist");
-
     this.store.select(selectDotSrc).pipe(
       takeUntil(this.destroy$),
       filter((dotSrc) => !!dotSrc))
@@ -52,8 +51,8 @@ export class AppGraphvizComponent implements AfterViewInit, OnDestroy, OnInit {
 
   ngAfterViewInit(): void {
     this.graph = select('#graph');
-    this.graphviz = graphviz('#graph', {useWorker: true})
-      // .addImage('assets/store.svg', '48px', '48px')
+    this.graphviz = this.d3_graphviz('#graph', {useWorker: true})
+      .addImage('assets/store.svg', '48px', '48px')
       .on('renderEnd', () => this.renderEnd())
       .on('end', () => this.end())
       .onerror((error) => this.onError(error));

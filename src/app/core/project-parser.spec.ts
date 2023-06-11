@@ -16,7 +16,8 @@ describe('ProjectParser', () => {
     http = TestBed.inject(HttpClient);
     projectParser = new ProjectParser();
 
-    for (const url of ['/base/tsconfig.json',
+    for (const url of [
+      '/base/tsconfig.json',
       '/base/node_modules/@ngrx/store/public_api.d.ts',
       '/base/node_modules/@ngrx/store/src/state.d.ts',
       '/base/node_modules/@ngrx/store/src/utils.d.ts',
@@ -42,7 +43,6 @@ describe('ProjectParser', () => {
       '/base/node_modules/@ngrx/store/src/reducer_manager.d.ts',
       '/base/node_modules/@ngrx/store/src/index.d.ts',
       '/base/node_modules/@ngrx/store/src/runtime_checks.d.ts',
-      '/base/node_modules/@ngrx/store/ngrx-store.d.ts',
       '/base/node_modules/@ngrx/store/index.d.ts',
       '/base/node_modules/@ngrx/effects/public_api.d.ts',
       '/base/node_modules/@ngrx/effects/src/utils.d.ts',
@@ -64,11 +64,9 @@ describe('ProjectParser', () => {
       '/base/node_modules/@ngrx/effects/src/effects_runner.d.ts',
       '/base/node_modules/@ngrx/effects/src/index.d.ts',
       '/base/node_modules/@ngrx/effects/src/effect_decorator.d.ts',
-      '/base/node_modules/@ngrx/effects/ngrx-effects.d.ts',
       '/base/node_modules/@ngrx/effects/index.d.ts',
       '/base/node_modules/@ngrx/effects/testing/public_api.d.ts',
-      '/base/node_modules/@ngrx/effects/testing/testing.d.ts',
-      '/base/node_modules/@ngrx/effects/testing/ngrx-effects-testing.d.ts']) {
+      '/base/node_modules/@ngrx/effects/testing/testing.d.ts']) {
       const text = await firstValueFrom(http.get(url, {responseType: 'text'}));
       projectParser.createSourceFile(url, text);
     }
